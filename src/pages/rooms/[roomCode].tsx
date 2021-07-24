@@ -36,11 +36,19 @@ export default function Room() {
   const { roomCode } = router.query;
 
   const { user } = useAuth();
-  const { title, suggestions } = useRoom(String(roomCode));
-
-  const [isAdmin, setIsAdmin] = useState(false);
+  const { title, suggestions, isAdmin } = useRoom(String(roomCode));
 
   const [newSuggestion, setNewSuggestion] = useState('');
+
+  async function handleCloseRoom() {
+    await database.ref(`rooms/${roomCode}`).update({
+      endedAt: new Date()
+    });
+
+    sessionStorage.removeItem('@spacesuggess/currentRoom');
+
+    router.push('/');
+  }
 
   async function handleLikeSuggestion(suggestionId: string, likeId: string | undefined) {
     if (likeId) {
@@ -53,7 +61,6 @@ export default function Room() {
   }
 
   async function handleSendSuggestion(event: FormEvent) {
-    console.log("aqui")
     event.preventDefault();
 
     if (newSuggestion.trim() === '') return;
@@ -105,8 +112,6 @@ export default function Room() {
         router.push('/');
         return;
       }
-
-      setIsAdmin(roomRef.child('authorId').val() === user?.id);
     }
 
     checkRoomPassword();
@@ -129,9 +134,11 @@ export default function Room() {
             <Actions>
               <RoomCode code={String(roomCode)} />
 
-              <Button outlined>
-                Encerrar sala
-              </Button>
+              {isAdmin && (
+                <Button outlined onClick={handleCloseRoom}>
+                  Encerrar sala
+                </Button>
+              )}
             </Actions>
           </HeaderContent>
         </Header>

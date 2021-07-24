@@ -32,6 +32,7 @@ export function useRoom(roomId: string) {
   
   const [suggestions, setSuggestions] = useState<SuggestionType[]>([]);
   const [title, setTitle] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const roomRef = database.ref(`/rooms/${roomId}`);
@@ -55,6 +56,7 @@ export function useRoom(roomId: string) {
 
       setTitle(databaseRoom.title);
       setSuggestions(parsedSuggestions);
+      setIsAdmin(databaseRoom.authorId === user?.id);
     });
 
     return () => {
@@ -62,5 +64,5 @@ export function useRoom(roomId: string) {
     }
   }, [roomId, user?.id]);
 
-  return { suggestions, title };
+  return { suggestions, title, isAdmin };
 }
