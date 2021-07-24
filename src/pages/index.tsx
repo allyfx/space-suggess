@@ -1,10 +1,13 @@
 import { FormEvent, useState } from 'react';
-
 import { useRouter } from 'next/router';
-import Head from 'next/head';
-import Image from 'next/image';
 
 import { useAuth } from '../hooks/useAuth';
+
+import { database } from '../services/firebase';
+import { compareHash } from '../services/bcrypt';
+
+import Head from 'next/head';
+import Image from 'next/image';
 
 import { Input } from '../components/Form/Input';
 import { Button } from '../components/Form/Button';
@@ -35,15 +38,41 @@ export default function Home() {
   const [code, setCode] = useState('');
   const [password, setPassword] = useState('');
 
-  async function handleEnterRoom(event: FormEvent) {
+  async function handleJoinRoom(event: FormEvent) {
     event.preventDefault();
 
-    const data = {
+    if (code.trim() === '' || password.trim() === '') return;
+
+    const roomRef = await database.ref(`rooms/${code}`).get();
+
+    if (!roomRef) {
+      alert('Room does not exists.');
+      return;
+    }
+
+    if (roomRef.val().endedAt) {
+      alert('Room already closed.');
+      return;
+    }
+
+    const isSamePassword = await compareHash(
+      password,
+      roomRef.child('password').val()
+    );
+
+    if (!isSamePassword) {
+      alert('Password incorrect.');
+      return;
+    }
+
+    const currentRoom = {
       code,
       password,
     }
 
-    console.log(data);
+    sessionStorage.setItem('@spacesuggess/currentRoom', JSON.stringify(currentRoom));
+
+    router.push(`/rooms/${code}`);
   }
 
   async function handleCreateNewRoom() {
@@ -85,7 +114,7 @@ export default function Home() {
               alt="Space Suggess"
             />
 
-            <Form onSubmit={handleEnterRoom}>
+            <Form onSubmit={handleJoinRoom}>
               <Input
                 placeholder="Digite o código da sala"
                 onChange={(e) => setCode(e.target.value)}
