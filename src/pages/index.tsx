@@ -1,5 +1,6 @@
 import { FormEvent, useState } from 'react';
 
+import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Image from 'next/image';
 
@@ -28,6 +29,7 @@ import {
 } from '../styles/pages/home';
 
 export default function Home() {
+  const router = useRouter();
   const { user, signInWithGithub } = useAuth();
 
   const [code, setCode] = useState('');
@@ -45,7 +47,7 @@ export default function Home() {
   }
 
   async function handleCreateNewRoom() {
-
+    router.push('/rooms/create');
   }
 
   async function loginWithGithub() {

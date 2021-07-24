@@ -19,4 +19,13 @@ export default createGlobalStyle`
   button {
     cursor: pointer;
   }
+
+  a {
+    color: #E559F9;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
 `;
